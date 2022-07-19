@@ -56,7 +56,9 @@ class MySQLConnectorLib:
     def select_query(self, sql_query: str,
                      sql_variables: tuple = None,
                      as_df: bool = True) -> Union[None, pd.DataFrame, list]:
-        """ return select query as list or pandas DataFrame or None if error"""
+        """ return select query as list or pandas DataFrame or None if error
+            sql_variables: parameters in order of %s use in the sql_query
+        """
 
         self.mysql_connection_rlock.acquire()
         self._get_connection()
@@ -80,8 +82,12 @@ class MySQLConnectorLib:
             self._close_connection()
             self.mysql_connection_rlock.release()
 
-    def execute_no_return_query(self, sql_query: str, sql_variables: tuple = None):
-        """ method that handles execute queries with no return: delete update insert"""
+    def execute_no_return_query(self, sql_query: str, sql_variables: tuple = None) -> int:
+        """ method that handles execute queries with: delete update insert
+            sql_variables: parameters in order of %s use in the sql_query
+            Return the number of rows affected by the query
+
+        """
         self.mysql_connection_rlock.acquire()
         self._get_connection()
 
