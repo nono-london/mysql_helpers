@@ -1,0 +1,9 @@
+.idea
+.venv
+__init__.py
+mysql_helpers/app_config_secret.py
+
+build
+dist
+*.egg-info
+*/.pytest_cache

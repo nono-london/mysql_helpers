@@ -1,0 +1,5 @@
+MYSQL_USER_NAME: str = ''
+MYSQL_PASSWORD: str = ''
+MYSQL_DATABASE_NAME: str = ''
+MYSQL_PORT: int = 3306
+MYSQL_URL: str = ''
