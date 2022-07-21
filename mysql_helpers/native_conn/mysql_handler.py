@@ -110,4 +110,4 @@ class MySQLConnectorLib:
 
 if __name__ == '__main__':
     my_getter = MySQLConnectorLib()
-    print(my_getter.select_query(sql_query="SELECT * FROM tbl_proxy_url ORDER BY error_count DESC LIMIT 10 "))
+    print(my_getter.select_query(sql_query="SELECT * FROM proxy_schema ORDER BY error_count DESC LIMIT 10 "))
