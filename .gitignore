@@ -1,0 +1,20 @@
+# IDE
+.idea
+
+# Venvs
+.venv
+venv
+
+# secrets
+mysql_helpers/app_config_secret.py
+.env
+# Python
+
+
+# Tests
+*/.pytest_cache
+
+# Prod
+build
+dist
+*.egg-info
