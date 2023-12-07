@@ -9,6 +9,7 @@ from mysql.connector.cursor import MySQLCursor
 from mysql.connector.errors import InterfaceError
 
 
+
 class MySQLConnectorNative:
     """ MySQL class helpers with Rlock use  """
 
