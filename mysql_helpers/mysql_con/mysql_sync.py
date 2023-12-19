@@ -141,6 +141,7 @@ class MySQLConnectorNative:
         """
 
         if not self.open_connection():
+            print(f'Connection error')
             return -1
 
         rows_affected: int = 0
