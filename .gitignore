@@ -9,7 +9,7 @@ venv
 mysql_helpers/app_config_secret.py
 .env
 # Python
-
+*.pyc
 
 # Tests
 */.pytest_cache
