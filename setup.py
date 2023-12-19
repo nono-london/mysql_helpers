@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="mysql_helpers",
-    version="0.0.1.1",
+    version="0.0.1.2",
     author="Nono London",
     author_email="",
     description="MySQL Connection Helper in Sync mode",
