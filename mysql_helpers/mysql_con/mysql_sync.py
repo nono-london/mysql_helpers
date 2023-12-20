@@ -3,7 +3,7 @@ from os import environ
 from typing import Union, Optional, List, Tuple
 
 import pandas as pd
-from dotenv import load_dotenv
+
 from mysql.connector import MySQLConnection
 from mysql.connector.cursor import MySQLCursor
 from mysql.connector.errors import InterfaceError
@@ -74,7 +74,6 @@ class MySQLConnectorNative:
         :return: return a pandas DataFrame if there are results or None if error
         """
         if not self.open_connection():
-            print(f'Unable to get a connection to MySQL: Host: "{self.db_host}"')
             return None
         try:
             mysql_cursor = self.mysql_connection.cursor()
@@ -108,7 +107,6 @@ class MySQLConnectorNative:
         :return: return a pandas DataFrame if there are results or None if error
         """
         if not self.open_connection():
-            print(f'Unable to get a connection to MySQL: Host: "{self.db_host}"')
             return None
 
         mysql_cursor: MySQLCursor = self.mysql_connection.cursor()
@@ -141,7 +139,6 @@ class MySQLConnectorNative:
         """
 
         if not self.open_connection():
-            print(f'Connection error')
             return -1
 
         rows_affected: int = 0
@@ -157,12 +154,12 @@ class MySQLConnectorNative:
             print(f"Variables used: {sql_variables}")
             try:
                 print(
-                    f'Statement used: "{mysql_cursor.statement}" ',
+                    f'Statement used:\n"{mysql_cursor.statement}" ',
                 )
             # TODO: use the appropriate Excetion code for undefined variables
             except Exception as ex:
                 print(
-                    f"Error ({ex.__class__.__name__}) while executed sql statement: {ex}"
+                    f"Error ({ex.__class__.__name__}) while executing sql statement:\n{ex}"
                 )
                 return -1
         finally:
@@ -174,6 +171,7 @@ class MySQLConnectorNative:
 
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
     load_dotenv()
     my_getter = MySQLConnectorNative()
     print(
