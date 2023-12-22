@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="mysql_helpers",
-    version="0.0.1.2",
+    version="0.0.1.3",
     author="Nono London",
     author_email="",
     description="MySQL Connection Helper in Sync mode",
@@ -20,5 +20,5 @@ setup(
     ],
     install_requires=["mysql-connector-python", "python-dotenv", "pandas"],
     tests_require=["pytest"],
-    python_requires='>=3.9',
+    python_requires=">=3.9",
 )
