@@ -135,7 +135,7 @@ class MySQLConnectorNative:
         :param sql_query: the MySQL query
         :param sql_variables: parameters ordered with %s usage in the sql_query
         :param close_connection: close connection after the method ends
-        :return: returns the number of rows affected, -1 if error
+        :return: returns the number of rows affected, -1 if connection error ONLY
         """
 
         if not self.open_connection():
@@ -161,7 +161,6 @@ class MySQLConnectorNative:
                 print(
                     f"Error ({ex.__class__.__name__}) while executing sql statement:\n{ex}"
                 )
-                return -1
         finally:
             if close_connection:
                 self.close_connection()
