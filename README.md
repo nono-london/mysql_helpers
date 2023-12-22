@@ -11,6 +11,11 @@ Use .env.example to get a template of the info that need to be provided to ensur
 
 # MySQL Docs & Tutorials
 ## Connection Pooling
+### Usage
+* the API allow user to store a connection by a given name and reuse it with the set of fetch_all_as_dicts, fetch_all_as_df, execute_one_query
+* connection can be closed at the end of the program or batched closed, using close_connection(connection_name:...) or close_all_connection
+
+### Docs
  * [MySQL doc](https://dev.mysql.com/doc/connector-python/en/connector-python-connection-pooling.html)
 
 
