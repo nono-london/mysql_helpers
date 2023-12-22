@@ -1,6 +1,6 @@
 """ Handles queries to MySQL using the mysql-python native connector"""
 from os import environ
-from typing import Union, Optional, List, Tuple
+from typing import Union, Optional, List, Tuple, Dict
 
 import pandas as pd
 from mysql.connector.pooling import PooledMySQLConnection, MySQLConnectionPool
@@ -38,6 +38,7 @@ class MySQLConnectorPoolNative:
         self.raise_on_warnings: bool = raise_on_warnings
 
         self.mysql_pool: Union[None, MySQLConnectionPool] = self.create_pool()
+        self.pool_connections:Dict={} # {'a_name_of_conn':Connection1},{'another_name_of_conn':Connection2} ]
 
     def create_pool(self) -> Union[None, MySQLConnectionPool]:
         """Return mysql connection or None if failure to establish one"""
@@ -72,6 +73,8 @@ class MySQLConnectorPoolNative:
         self,
         sql_query: str,
         sql_variables: Optional[Tuple] = None,
+        close_connection:bool=True,
+        connection_name:Optional[str]=None
     ) -> Union[pd.DataFrame, None]:
         """
         :param sql_query: the MySQL query
@@ -81,15 +84,22 @@ class MySQLConnectorPoolNative:
         """
 
         try:
-            conn = self.mysql_pool.get_connection()
-            mysql_cursor = conn.cursor()
+            if connection_name and self.pool_connections.get(connection_name) is not None:
+                conn:PooledMySQLConnection = self.pool_connections[connection_name]
+            else:
+                conn:PooledMySQLConnection = self.mysql_pool.get_connection()
 
+            
+            mysql_cursor = conn.cursor()
             mysql_cursor.execute(sql_query, sql_variables)
             result_df = pd.DataFrame(mysql_cursor.fetchall())
             result_df.columns = mysql_cursor.column_names
-
             mysql_cursor.close()
-            conn.close()
+
+            if close_connection:
+                conn.close()
+            else:
+                self.pool_connections[connection_name]=conn
             return result_df
         except Exception as ex:
             print(
@@ -102,6 +112,8 @@ class MySQLConnectorPoolNative:
         self,
         sql_query: str,
         sql_variables: Optional[Tuple] = None,
+                close_connection:bool=True,
+        connection_name:Optional[str]=None
     ) -> Union[List[Tuple], None]:
         """
         :param sql_query: the MySQL query
@@ -111,12 +123,21 @@ class MySQLConnectorPoolNative:
         """
 
         try:
-            conn = self.mysql_pool.get_connection()
+            if connection_name and self.pool_connections.get(connection_name) is not None:
+                conn:PooledMySQLConnection = self.pool_connections[connection_name]
+            else:
+                conn:PooledMySQLConnection = self.mysql_pool.get_connection()
+            
             mysql_cursor: MySQLCursor = conn.cursor()
             mysql_cursor.execute(sql_query, sql_variables)
+            results = mysql_cursor.fetchall()
             mysql_cursor.close()
-            conn.close()
-            return mysql_cursor.fetchall()
+            
+            if close_connection:
+                conn.close()
+            else:
+                self.pool_connections[connection_name]=conn
+            return results
 
         except Exception as ex:
             print("Error while inserting new score :", ex)
@@ -129,6 +150,8 @@ class MySQLConnectorPoolNative:
         self,
         sql_query: str,
         sql_variables: Optional[Tuple] = None,
+                        close_connection:bool=True,
+        connection_name:Optional[str]=None
     ) -> int:
         """method that handles execute queries: delete update insert
         :param sql_query: the MySQL query
@@ -139,13 +162,21 @@ class MySQLConnectorPoolNative:
 
         rows_affected: int = 0
         try:
-            conn = self.mysql_pool.get_connection()
+            if connection_name and self.pool_connections.get(connection_name) is not None:
+                conn:PooledMySQLConnection = self.pool_connections[connection_name]
+            else:
+                conn:PooledMySQLConnection = self.mysql_pool.get_connection()
+
             mysql_cursor: MySQLCursor = conn.cursor()
             mysql_cursor.execute(sql_query, sql_variables)
             rows_affected = mysql_cursor.rowcount
             conn.commit()
             mysql_cursor.close()
-            conn.close()
+
+            if close_connection:
+                conn.close()
+            else:
+                self.pool_connections[connection_name]=conn
 
         except Exception as ex:
             print(f"Error ({ex.__class__.__name__}) while executing query : {ex}")
@@ -162,6 +193,14 @@ class MySQLConnectorPoolNative:
 
         return rows_affected
 
+    def close_connection(self, connection_name:str):
+        self.pool_connections[connection_name].close()
+
+    def close_all_connections(self):
+        for conn in self.pool_connections:
+            self.pool_connections[conn].close()
+
+
     #:TODO: add execute many using prepared statement
 
 
@@ -171,7 +210,7 @@ if __name__ == "__main__":
     load_dotenv()
     my_getter = MySQLConnectorPoolNative()
     print(
-        my_getter.fetch_all_as_df(
+        my_getter.fetch_all_as_dicts(
             sql_query="SELECT * FROM tbl_proxy_url ORDER BY error_count DESC LIMIT 10 "
         )
     )

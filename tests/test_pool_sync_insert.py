@@ -9,11 +9,11 @@ from random import randint
 TEST_TABLE_NAME: str = "pytest_temp_1"
 
 
-def test_create_table():
+def test_insert_in_temp_table():
     load_dotenv()
 
     # create temp table
-    table_upper = MySQLConnectorPoolNative(pool_size=32)
+    table_upper = MySQLConnectorPoolNative(pool_size=2)
     sql_query: str = f"""
             CREATE TEMPORARY TABLE `{TEST_TABLE_NAME}` (
                 `proxy_id` int NOT NULL AUTO_INCREMENT,
@@ -35,10 +35,37 @@ def test_create_table():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             
             """
+    connection_name = "test_insert"
+    result = table_upper.execute_one_query(
+        sql_query=sql_query, 
+        close_connection=False, 
+        connection_name=connection_name
+    )
+    
 
-    result = table_upper.execute_one_query(sql_query=sql_query)
-   
+    # create records
+    sql_query = f""" INSERT INTO {TEST_TABLE_NAME} (proxy_url, proxy_port)
+                    VALUES (%s, %s)
+                """
+    nbr_records: int = 50
+    for n in range(nbr_records):
+        sql_variables = (f"https:\\www.example{n}.com", str(randint(1, 5000)))
+        table_upper.execute_one_query(
+            sql_query=sql_query,
+            sql_variables=sql_variables,
+            close_connection=False,
+            connection_name=connection_name,
+        )
+    # check numbe rof records inserted
+    sql_query = f""" SELECT COUNT(*) 
+                FROM {TEST_TABLE_NAME}
+                """
+    result = table_upper.fetch_all_as_dicts(
+        sql_query=sql_query, close_connection=True, connection_name=connection_name
+    )
+
+    assert result[0][0] == nbr_records
 
 
 if __name__ == "__main__":
-    test_create_table()
+    test_insert_in_temp_table()
