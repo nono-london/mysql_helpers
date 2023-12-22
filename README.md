@@ -9,6 +9,11 @@ Use .env.example to get a template of the info that need to be provided to ensur
 
 
 
+# MySQL Docs & Tutorials
+## Connection Pooling
+ * [MySQL doc](https://dev.mysql.com/doc/connector-python/en/connector-python-connection-pooling.html)
+
+
 # Useful Git commands
 * remove files git repository (not the file system)
     ```
