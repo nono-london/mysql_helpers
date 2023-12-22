@@ -9,7 +9,7 @@ from random import randint
 TEST_TABLE_NAME: str = "pytest_temp_1"
 
 
-def test_create_table():
+def test_insert_in_temp_table():
     load_dotenv()
 
     # create temp table
@@ -59,4 +59,4 @@ def test_create_table():
 
 
 if __name__ == "__main__":
-    test_create_table()
+    test_insert_in_temp_table()

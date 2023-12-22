@@ -111,22 +111,21 @@ class MySQLConnectorNative:
         """
         if not self.open_connection():
             return None
-
-        mysql_cursor: MySQLCursor = self.mysql_connection.cursor()
+        
         try:
+            mysql_cursor: MySQLCursor = self.mysql_connection.cursor()
             mysql_cursor.execute(sql_query, sql_variables)
-            return mysql_cursor.fetchall()
-
+            results = mysql_cursor.fetchall()
+            mysql_cursor.close()
+            if close_connection:
+                self.close_connection()
+            return results
         except Exception as ex:
             print("Error while inserting new score :", ex)
             print(
                 f'SQL Statement used: "{mysql_cursor.statement}" ',
             )
             return None
-        finally:
-            mysql_cursor.close()
-            if close_connection:
-                self.close_connection()
 
     def execute_one_query(
         self,
@@ -151,7 +150,8 @@ class MySQLConnectorNative:
             rows_affected = mysql_cursor.rowcount
             self.mysql_connection.commit()
             mysql_cursor.close()
-
+            if close_connection:
+                self.close_connection()
         except Exception as ex:
             print(f"Error ({ex.__class__.__name__}) while executing query : {ex}")
             print(f"Variables used: {sql_variables}")
@@ -164,9 +164,7 @@ class MySQLConnectorNative:
                 print(
                     f"Error ({ex.__class__.__name__}) while executing sql statement:\n{ex}"
                 )
-        finally:
-            if close_connection:
-                self.close_connection()
+
         return rows_affected
 
     #:TODO: add execute many using prepared statement
