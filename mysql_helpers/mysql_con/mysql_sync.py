@@ -56,6 +56,8 @@ class MySQLConnectorNative:
                 f"Error type is: {type(ex)}"
             )
             return None
+        except Exception as ex:
+            print(f"Unhandled,connection error: {ex}")
 
     def close_connection(self):
         if self.mysql_connection is not None and self.mysql_connection.is_connected():
