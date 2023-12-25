@@ -212,8 +212,9 @@ class MySQLConnectorPoolNative:
 
 
 if __name__ == "__main__":
-    from dotenv import load_dotenv
-
+    from dotenv import load_dotenv  
+    from mysql_helpers.app_config import logging_config
+    logging_config()
     load_dotenv()
     my_getter = MySQLConnectorPoolNative()
     print(
