@@ -1,12 +1,14 @@
 """ Handles queries to MySQL using the mysql-python native connector"""
 from os import environ
 from typing import Union, Optional, List, Tuple
-
+from pathlib import Path
 import pandas as pd
-
+import logging
 from mysql.connector import MySQLConnection
 from mysql.connector.cursor import MySQLCursor
 from mysql.connector.errors import InterfaceError
+
+logger = logging.getLogger(f"mysql_helpers:{Path(__file__).name}")
 
 
 class MySQLConnectorNative:
@@ -50,14 +52,11 @@ class MySQLConnectorNative:
             )
             return self.mysql_connection
         except InterfaceError as ex:
-            print(
-                f"Can't find MySql server on Host: {self.db_host}, Port: {self.db_port}.\n"
-                f"Error is: {ex}\n"
-                f"Error type is: {type(ex)}"
+            logger.warning(
+                f"Unhandled connection error: can't find MySql server on Host: {self.db_host}, Port: {self.db_port}. Error is: {ex}. Error type is: {type(ex)}."
             )
         except Exception as ex:
-            print(f"Unhandled,connection error: {ex}")
-        
+            logger.error(f"Unhandled connection error: {ex}")
         return None
 
     def close_connection(self):
@@ -88,9 +87,8 @@ class MySQLConnectorNative:
             mysql_cursor.close()
             return result_df
         except Exception as ex:
-            print(
-                f"Error while fetching data : {ex}\n"
-                f"Exception is {ex.__class__.__name__}"
+            logger.error(
+                f"Error while fetching data : {ex}. Exception is {ex.__class__.__name__}"
             )
             return None
         finally:
@@ -111,7 +109,7 @@ class MySQLConnectorNative:
         """
         if not self.open_connection():
             return None
-        
+
         try:
             mysql_cursor: MySQLCursor = self.mysql_connection.cursor()
             mysql_cursor.execute(sql_query, sql_variables)
@@ -121,9 +119,8 @@ class MySQLConnectorNative:
                 self.close_connection()
             return results
         except Exception as ex:
-            print("Error while inserting new score :", ex)
-            print(
-                f'SQL Statement used: "{mysql_cursor.statement}" ',
+            logger.error(
+                f"Error while inserting new score: {ex}. SQL Statement used: {mysql_cursor.statement}"
             )
             return None
 
@@ -153,16 +150,16 @@ class MySQLConnectorNative:
             if close_connection:
                 self.close_connection()
         except Exception as ex:
-            print(f"Error ({ex.__class__.__name__}) while executing query : {ex}")
-            print(f"Variables used: {sql_variables}")
+            logger.error("Error ({ex.__class__.__name__}) while executing query: {ex}")
+            logger.error(f"Variables used: {sql_variables}")
             try:
                 print(
                     f'Statement used:\n"{mysql_cursor.statement}" ',
                 )
             # TODO: use the appropriate Excetion code for undefined variables
             except Exception as ex:
-                print(
-                    f"Error ({ex.__class__.__name__}) while executing sql statement:\n{ex}"
+                logger.error(
+                    f"Error ({ex.__class__.__name__}) while executing sql statement: {ex}"
                 )
 
         return rows_affected
@@ -172,6 +169,7 @@ class MySQLConnectorNative:
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
+
     load_dotenv()
     my_getter = MySQLConnectorNative()
     print(
