@@ -23,7 +23,7 @@ setuptools
 # python setup.py pytest
 pytest
 pytest-runner
-
+pytest-asyncio
 # python -m venv venv
 
 # python -m pip install --upgrade pip
