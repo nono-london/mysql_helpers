@@ -1,10 +1,9 @@
 """ creates a table names test_help_01, insert rows and delete the table """
-from mysql_helpers.mysql_con.mysql_sync import MySQLConnectorNative
-from dotenv import load_dotenv
-from time import sleep
-
-from datetime import datetime
 from random import randint
+
+from dotenv import load_dotenv
+
+from mysql_helpers.mysql_con.mysql_sync import MySQLConnectorNative
 
 TEST_TABLE_NAME: str = "pytest_temp_1"
 
@@ -53,7 +52,7 @@ def test_insert_in_temp_table():
     sql_query = f""" SELECT COUNT(*) 
                 FROM {TEST_TABLE_NAME}
                 """
-    result = table_upper.fetch_all_as_dicts(sql_query=sql_query, close_connection=False)
+    result = table_upper.fetch_all_as_dicts(sql_query=sql_query, close_connection=True)
 
     assert result[0][0] == nbr_records
 
