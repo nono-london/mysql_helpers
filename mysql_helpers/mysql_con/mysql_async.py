@@ -39,7 +39,7 @@ class MySQLConnectorNativeAsync:
 
     async def open_connection(self) -> _MySQLConnectionAbstract:
         """Return mysql connection if needed or raise an error"""
-        if self.mysql_connection is not None and self.mysql_connection.is_connected():
+        if self.mysql_connection is not None and await self.mysql_connection.is_connected():
             return self.mysql_connection
 
         try:
