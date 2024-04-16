@@ -1,10 +1,9 @@
 """ creates a table names test_help_01, insert rows and delete the table """
-from mysql_helpers.mysql_con.mysql_pool_sync import MySQLConnectorPoolNative
-from dotenv import load_dotenv
-from time import sleep
-
-from datetime import datetime
 from random import randint
+
+from dotenv import load_dotenv
+
+from mysql_helpers.mysql_con.mysql_pool_sync import MySQLConnectorPoolNative
 
 TEST_TABLE_NAME: str = "pytest_temp_1"
 
@@ -37,11 +36,10 @@ def test_insert_in_temp_table():
             """
     connection_name = "test_insert"
     result = table_upper.execute_one_query(
-        sql_query=sql_query, 
-        close_connection=False, 
+        sql_query=sql_query,
+        close_connection=False,
         connection_name=connection_name
     )
-    
 
     # create records
     sql_query = f""" INSERT INTO {TEST_TABLE_NAME} (proxy_url, proxy_port)

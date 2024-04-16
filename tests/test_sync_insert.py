@@ -8,9 +8,8 @@ from mysql_helpers.mysql_con.mysql_sync import MySQLConnectorNative
 TEST_TABLE_NAME: str = "pytest_temp_1"
 load_dotenv()
 
+
 def test_insert_in_temp_table():
-
-
     # create temp table
     table_upper = MySQLConnectorNative()
     sql_query: str = f"""

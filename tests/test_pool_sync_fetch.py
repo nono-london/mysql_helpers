@@ -3,8 +3,6 @@ from dotenv import load_dotenv
 from mysql_helpers.mysql_con.mysql_pool_sync import MySQLConnectorPoolNative
 
 
-
-
 def test_fetch_as_def():
     load_dotenv()
     my_getter = MySQLConnectorPoolNative(pool_size=2)

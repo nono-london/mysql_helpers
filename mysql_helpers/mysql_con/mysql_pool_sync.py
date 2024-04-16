@@ -1,13 +1,13 @@
 """ Handles queries to MySQL using the mysql-python native connector"""
-from os import environ
-from typing import Union, Optional, List, Tuple, Dict
 import logging
+from os import environ
 from pathlib import Path
-import pandas as pd
-from mysql.connector.pooling import PooledMySQLConnection, MySQLConnectionPool
+from typing import Union, Optional, List, Tuple, Dict
 
+import pandas as pd
 from mysql.connector.cursor import MySQLCursor
 from mysql.connector.errors import InterfaceError
+from mysql.connector.pooling import PooledMySQLConnection, MySQLConnectionPool
 
 logger = logging.getLogger(f"mysql_helpers:{Path(__file__).name}")
 
@@ -16,17 +16,17 @@ class MySQLConnectorPoolNative:
     """MySQL class helpers with Rlock use"""
 
     def __init__(
-        self,
-        db_host: Optional[str] = None,
-        db_port: Union[int, str] = None,
-        db_user: Optional[str] = None,
-        db_password: Optional[str] = None,
-        db_name: Optional[str] = None,
-        raise_on_warnings: bool = False,
-        pool_size: int = 30,
-        pool_name: Optional[str] = None,
+            self,
+            db_host: Optional[str] = None,
+            db_port: Union[int, str] = None,
+            db_user: Optional[str] = None,
+            db_password: Optional[str] = None,
+            db_name: Optional[str] = None,
+            raise_on_warnings: bool = False,
+            pool_size: int = 30,
+            pool_name: Optional[str] = None,
     ):
-        self.pool_size: int = min(32, pool_size)  #  max siwe is 32
+        self.pool_size: int = min(32, pool_size)  # max siwe is 32
         self.pool_name: Union[str, None] = pool_name
 
         self.db_host: str = environ["MYSQL_DB_HOST"] if db_host is None else db_host
@@ -73,11 +73,11 @@ class MySQLConnectorPoolNative:
         return None
 
     def fetch_all_as_df(
-        self,
-        sql_query: str,
-        sql_variables: Optional[Tuple] = None,
-        close_connection: bool = True,
-        connection_name: Optional[str] = None,
+            self,
+            sql_query: str,
+            sql_variables: Optional[Tuple] = None,
+            close_connection: bool = True,
+            connection_name: Optional[str] = None,
     ) -> Union[pd.DataFrame, None]:
         """
         :param sql_query: the MySQL query
@@ -88,8 +88,8 @@ class MySQLConnectorPoolNative:
 
         try:
             if (
-                connection_name
-                and self.pool_connections.get(connection_name) is not None
+                    connection_name
+                    and self.pool_connections.get(connection_name) is not None
             ):
                 conn: PooledMySQLConnection = self.pool_connections[connection_name]
             else:
@@ -113,11 +113,11 @@ class MySQLConnectorPoolNative:
             return None
 
     def fetch_all_as_dicts(
-        self,
-        sql_query: str,
-        sql_variables: Optional[Tuple] = None,
-        close_connection: bool = True,
-        connection_name: Optional[str] = None,
+            self,
+            sql_query: str,
+            sql_variables: Optional[Tuple] = None,
+            close_connection: bool = True,
+            connection_name: Optional[str] = None,
     ) -> Union[List[Tuple], None]:
         """
         :param sql_query: the MySQL query
@@ -128,8 +128,8 @@ class MySQLConnectorPoolNative:
 
         try:
             if (
-                connection_name
-                and self.pool_connections.get(connection_name) is not None
+                    connection_name
+                    and self.pool_connections.get(connection_name) is not None
             ):
                 conn: PooledMySQLConnection = self.pool_connections[connection_name]
             else:
@@ -153,11 +153,11 @@ class MySQLConnectorPoolNative:
             return None
 
     def execute_one_query(
-        self,
-        sql_query: str,
-        sql_variables: Optional[Tuple] = None,
-        close_connection: bool = True,
-        connection_name: Optional[str] = None,
+            self,
+            sql_query: str,
+            sql_variables: Optional[Tuple] = None,
+            close_connection: bool = True,
+            connection_name: Optional[str] = None,
     ) -> int:
         """method that handles execute queries: delete update insert
         :param sql_query: the MySQL query
@@ -169,8 +169,8 @@ class MySQLConnectorPoolNative:
         rows_affected: int = 0
         try:
             if (
-                connection_name
-                and self.pool_connections.get(connection_name) is not None
+                    connection_name
+                    and self.pool_connections.get(connection_name) is not None
             ):
                 conn: PooledMySQLConnection = self.pool_connections[connection_name]
             else:
@@ -212,8 +212,9 @@ class MySQLConnectorPoolNative:
 
 
 if __name__ == "__main__":
-    from dotenv import load_dotenv  
+    from dotenv import load_dotenv
     from mysql_helpers.app_config import logging_config
+
     logging_config()
     load_dotenv()
     my_getter = MySQLConnectorPoolNative()
