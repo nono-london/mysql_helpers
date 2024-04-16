@@ -54,13 +54,13 @@ async def test_insert_in_temp_table():
             sql_query=sql_query, sql_variables=sql_variables, close_connection=False
         )
     # check numbe rof records inserted
-    sql_query = f""" SELECT COUNT(*) 
+    sql_query = f""" SELECT COUNT(*) as count
                 FROM {TEST_TABLE_NAME}
                 """
     result = await table_upper.fetch_all_as_dicts(sql_query=sql_query,
                                                   close_connection=True)
 
-    assert result[0][0] == nbr_records
+    assert result[0]["count"] == nbr_records
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ async def test_mysql_async_fetch_as_dict():
 
     loop = asyncio.get_event_loop()
     sql_query = """SELECT @@version"""
-    results = await my_getter.fetch_all_as_df(sql_query=sql_query)
+    results = await my_getter.fetch_all_as_dicts(sql_query=sql_query)
 
     assert len(results) > 0
 
