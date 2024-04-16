@@ -5,7 +5,7 @@ import asyncio
 import logging
 from os import environ
 from pathlib import Path
-from typing import (Union, Optional, Tuple, List)
+from typing import (Union, Optional, Dict, List, Tuple)
 
 import pandas as pd
 from mysql.connector.aio import MySQLConnectionAbstract as _MySQLConnectionAbstract
@@ -98,7 +98,7 @@ class MySQLConnectorNativeAsync:
             sql_query: str,
             sql_variables: Optional[Tuple] = None,
             close_connection: Optional[bool] = True,
-    ) -> Union[List[Tuple], None]:
+    ) -> Union[List[Dict], None]:
         """
         :param sql_query: the MySQL query
         :param sql_variables: parameters ordered with %s usage in the sql_query
@@ -109,9 +109,9 @@ class MySQLConnectorNativeAsync:
         await self.open_connection()
 
         mysql_cursor: Union[_MySQLCursorAbstract, None] = None
-        results: Union[List[Tuple], None] = None
+        results: Union[List[Dict], None] = None
         try:
-            mysql_cursor = await self.mysql_connection.cursor()
+            mysql_cursor = await self.mysql_connection.cursor(dictionary=True)
             await mysql_cursor.execute(sql_query, sql_variables)
             results = await mysql_cursor.fetchall()
             await mysql_cursor.close()
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     my_getter = MySQLConnectorNativeAsync()
     loop = asyncio.get_event_loop()
     print(
-        loop.run_until_complete(my_getter.fetch_all_as_df(
+        loop.run_until_complete(my_getter.fetch_all_as_dicts(
             sql_query="SELECT * FROM tbl_proxy_url ORDER BY error_count DESC LIMIT 10 "
         )
         )
