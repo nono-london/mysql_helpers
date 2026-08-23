@@ -22,6 +22,7 @@ class MySQLConnectorNative:
             db_password: Optional[str] = None,
             db_name: Optional[str] = None,
             raise_on_warnings: bool = False,
+            autocommit: bool = True,
     ):
         self.db_host: str = environ["MYSQL_DB_HOST"] if db_host is None else db_host
         self.db_port: Union[int, str] = (
@@ -33,6 +34,7 @@ class MySQLConnectorNative:
         )
         self.db_name: str = environ["MYSQL_DB_NAME"] if db_name is None else db_name
         self.raise_on_warnings: bool = raise_on_warnings
+        self.autocommit: bool = autocommit
         self.mysql_connection: Union[None, MySQLConnection] = None
 
     def open_connection(self) -> Union[None, MySQLConnection]:
@@ -49,6 +51,7 @@ class MySQLConnectorNative:
                 database=self.db_name,
                 get_warnings=True,
                 raise_on_warnings=self.raise_on_warnings,
+                autocommit=self.autocommit,
             )
             return self.mysql_connection
         except Exception as ex:
