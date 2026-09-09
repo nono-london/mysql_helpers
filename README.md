@@ -64,9 +64,16 @@ and reopen the sync/async connection to send new values. Pools use the attribute
 provided at pool creation for their connections, so use them for app identity,
 not per-request metadata. Create a new pool to use a different identity.
 
+Note that `MySQLConnectorPoolNative(...)` now raises `ConnectionError` when the pool
+cannot be built, rather than returning an instance whose `mysql_pool` is `None` and
+failing later on the first query.
+
 The connector validates attribute names and values (strings, at most 32 and 1024
 characters respectively). Avoid names beginning with `_`, reserved for connector
-metadata. Validation errors follow each helper's existing connection error handling.
+metadata. Invalid attributes make the connector raise `InterfaceError`; all three
+helpers surface that as a `ConnectionError` with the original exception chained.
+The sync and async helpers raise on the first connection attempt, the pool helper
+at construction time.
 
 With Performance Schema enabled and a nonzero
 `performance_schema_session_connect_attrs_size`, inspect attributes on the same

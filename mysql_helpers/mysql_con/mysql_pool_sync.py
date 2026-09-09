@@ -6,7 +6,6 @@ from typing import Union, Optional, List, Tuple, Dict
 
 import pandas as pd
 from mysql.connector.cursor import MySQLCursor
-from mysql.connector.errors import InterfaceError
 from mysql.connector.pooling import PooledMySQLConnection, MySQLConnectionPool
 
 logger = logging.getLogger(f"mysql_helpers:{Path(__file__).name}")
@@ -48,13 +47,13 @@ class MySQLConnectorPoolNative:
         if app_function is not None:
             self.conn_attrs["app_function"] = app_function
 
-        self.mysql_pool: Union[None, MySQLConnectionPool] = self.create_pool()
+        self.mysql_pool: MySQLConnectionPool = self.create_pool()
         self.pool_connections: Dict = (
             {}
         )  # {'a_name_of_conn':Connection1},{'another_name_of_conn':Connection2} ]
 
-    def create_pool(self) -> Union[None, MySQLConnectionPool]:
-        """Return mysql connection or None if failure to establish one"""
+    def create_pool(self) -> MySQLConnectionPool:
+        """Return the mysql connection pool or raise a ConnectionError if it can't be created"""
 
         try:
             self.mysql_pool = MySQLConnectionPool(
@@ -71,15 +70,13 @@ class MySQLConnectorPoolNative:
             )
 
             return self.mysql_pool
-        except InterfaceError as ex:
-            logger.error(
-                f"Can't find MySql server on Host: {self.db_host}, Port: {self.db_port}. Error is: {ex}. Error type is: {type(ex)}"
-            )
-
         except Exception as ex:
-            print(f"Unhandled,connection error: {ex}")
-
-        return None
+            logger.error(
+                f"Can't create the pool on Host: {self.db_host}, Port: {self.db_port}. "
+                f"Error is: {ex}. Error type is: {type(ex)}"
+            )
+            raise ConnectionError(f'Failed to create the database connection pool\n'
+                                  f'Exception: {ex}') from ex
 
     def fetch_all_as_df(
             self,
