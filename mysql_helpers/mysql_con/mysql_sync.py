@@ -23,6 +23,9 @@ class MySQLConnectorNative:
             db_name: Optional[str] = None,
             raise_on_warnings: bool = False,
             autocommit: bool = True,
+            app_name: Optional[str] = None,
+            app_function: Optional[str] = None,
+            conn_attrs: Optional[Dict[str, str]] = None,
     ):
         self.db_host: str = environ["MYSQL_DB_HOST"] if db_host is None else db_host
         self.db_port: Union[int, str] = (
@@ -34,6 +37,11 @@ class MySQLConnectorNative:
         )
         self.db_name: str = environ["MYSQL_DB_NAME"] if db_name is None else db_name
         self.raise_on_warnings: bool = raise_on_warnings
+        self.conn_attrs: Dict[str, str] = dict(conn_attrs) if conn_attrs is not None else {}
+        if app_name is not None:
+            self.conn_attrs["app_name"] = app_name
+        if app_function is not None:
+            self.conn_attrs["app_function"] = app_function
         self.autocommit: bool = autocommit
         self.mysql_connection: Union[None, MySQLConnection] = None
 
@@ -51,6 +59,7 @@ class MySQLConnectorNative:
                 database=self.db_name,
                 get_warnings=True,
                 raise_on_warnings=self.raise_on_warnings,
+                **({"conn_attrs": self.conn_attrs.copy()} if self.conn_attrs else {}),
                 autocommit=self.autocommit,
             )
             return self.mysql_connection

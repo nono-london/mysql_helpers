@@ -25,6 +25,9 @@ class MySQLConnectorPoolNative:
             raise_on_warnings: bool = False,
             pool_size: int = 30,
             pool_name: Optional[str] = None,
+            app_name: Optional[str] = None,
+            app_function: Optional[str] = None,
+            conn_attrs: Optional[Dict[str, str]] = None,
     ):
         self.pool_size: int = min(32, pool_size)  # max siwe is 32
         self.pool_name: Union[str, None] = pool_name
@@ -39,6 +42,11 @@ class MySQLConnectorPoolNative:
         )
         self.db_name: str = environ["MYSQL_DB_NAME"] if db_name is None else db_name
         self.raise_on_warnings: bool = raise_on_warnings
+        self.conn_attrs: Dict[str, str] = dict(conn_attrs) if conn_attrs is not None else {}
+        if app_name is not None:
+            self.conn_attrs["app_name"] = app_name
+        if app_function is not None:
+            self.conn_attrs["app_function"] = app_function
 
         self.mysql_pool: Union[None, MySQLConnectionPool] = self.create_pool()
         self.pool_connections: Dict = (
@@ -59,6 +67,7 @@ class MySQLConnectorPoolNative:
                 database=self.db_name,
                 get_warnings=True,
                 raise_on_warnings=self.raise_on_warnings,
+                **({"conn_attrs": self.conn_attrs.copy()} if self.conn_attrs else {}),
             )
 
             return self.mysql_pool

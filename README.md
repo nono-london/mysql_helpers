@@ -36,3 +36,48 @@ Use .env.example to get a template of the info that need to be provided to ensur
     git push origin <version_number>
 
     ```
+
+## Application identity at connection establishment
+
+All three helpers (`MySQLConnectorNative`, `MySQLConnectorNativeAsync`, and
+`MySQLConnectorPoolNative`) accept optional `app_name`, `app_function`, and
+`conn_attrs` parameters:
+
+```python
+from mysql_helpers.mysql_con.mysql_sync import MySQLConnectorNative
+
+client = MySQLConnectorNative(
+    app_name="billing-service",
+    app_function="invoice-processing",
+    conn_attrs={"deploy_env": "production", "version": "1.2.0"},
+)
+```
+
+Database settings in this example come from the existing environment variables.
+The helpers copy `conn_attrs`; explicit non-`None` app parameters override matching
+keys. Empty strings are passed through. If the merged dictionary is empty, the
+connector argument is omitted, preserving existing connector behavior.
+
+Attributes describe a physical connection and are sent when it is established.
+Changing `client.conn_attrs` does not update an already connected session; close
+and reopen the sync/async connection to send new values. Pools use the attributes
+provided at pool creation for their connections, so use them for app identity,
+not per-request metadata. Create a new pool to use a different identity.
+
+The connector validates attribute names and values (strings, at most 32 and 1024
+characters respectively). Avoid names beginning with `_`, reserved for connector
+metadata. Validation errors follow each helper's existing connection error handling.
+
+With Performance Schema enabled and a nonzero
+`performance_schema_session_connect_attrs_size`, inspect attributes on the same
+connection with:
+
+```sql
+SELECT * FROM performance_schema.session_connect_attrs
+WHERE processlist_id = CONNECTION_ID();
+```
+
+These attributes do not appear in `SHOW PROCESSLIST`. An insufficient Performance
+Schema buffer can truncate attributes without a client error; check
+`Performance_schema_session_connect_attrs_lost`. The server rejects connections
+whose aggregate attribute payload exceeds 64 KB.
