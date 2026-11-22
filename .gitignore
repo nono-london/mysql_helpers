@@ -22,3 +22,4 @@ dist
 /.codex/
 
 /.github/ci-local/
+/.claude/
