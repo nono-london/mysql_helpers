@@ -19,3 +19,6 @@ mysql_helpers/app_config_secret.py
 build
 dist
 *.egg-info
+/.codex/
+
+/.github/ci-local/

@@ -1,0 +1,98 @@
+name: CI Python
+
+on:
+  push:
+    branches: ['master']
+  pull_request:
+    branches: ['master']
+
+permissions:
+  contents: read
+
+jobs:
+  test-python-mysql:
+    name: Test Python with MySQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    env:
+      MYSQL_DB_HOST: 127.0.0.1
+      MYSQL_DB_USER: ci_user
+      MYSQL_DB_PASS: ci_password
+      MYSQL_DB_NAME: ci_test
+    services:
+      mysql:
+        image: mysql:8.4.13@sha256:a81d043930e51745522bd5c430961cf8286f0a23f0a9a2a6e0108f7ea71b0902
+        env:
+          MYSQL_ROOT_PASSWORD: ci_root_password
+          MYSQL_DATABASE: ci_test
+          MYSQL_USER: ci_user
+          MYSQL_PASSWORD: ci_password
+        ports:
+          - 3306/tcp
+        options: >-
+          --health-cmd "MYSQL_PWD=ci_password mysql --protocol=TCP --host=127.0.0.1 --user=ci_user --database=ci_test --execute='SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-start-period 5m
+          --health-retries 12
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.9'
+
+      - name: Prepare report directory
+        run: |
+          mkdir -p "$RUNNER_TEMP/ci-python-reports"
+          echo "CI_REPORT_DIRECTORY=$RUNNER_TEMP/ci-python-reports" >> "$GITHUB_ENV"
+
+      - name: Install project and test dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install --no-deps .
+
+      - name: Record runtime versions
+        env:
+          CI_MYSQL_CONTAINER: ${{ job.services.mysql.id }}
+        run: |
+          cat /etc/os-release
+          python --version
+          docker exec -e MYSQL_PWD=ci_password "$CI_MYSQL_CONTAINER" \
+            mysql --protocol=TCP --host=127.0.0.1 --user=ci_user \
+            --database=ci_test --execute='SELECT VERSION();'
+
+      - name: Run project tests
+        env:
+          MYSQL_DB_PORT: ${{ job.services.mysql.ports['3306'] }}
+        run: python -m pytest tests --junitxml="$CI_REPORT_DIRECTORY/junit.xml" 2>&1 | tee "$CI_REPORT_DIRECTORY/tests.log"
+
+      - name: Collect MySQL diagnostics
+        if: always()
+        env:
+          CI_MYSQL_CONTAINER: ${{ job.services.mysql.id }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/ci-python-reports"
+          if [ -n "$CI_MYSQL_CONTAINER" ]; then
+            docker logs "$CI_MYSQL_CONTAINER" > "$RUNNER_TEMP/ci-python-reports/mysql.log" 2>&1
+          fi
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-python-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/ci-python-reports/tests.log
+            ${{ runner.temp }}/ci-python-reports/junit.xml
+            ${{ runner.temp }}/ci-python-reports/mysql.log
+          retention-days: 7
+          if-no-files-found: warn
